@@ -38,7 +38,7 @@ kubernetes v1.9.1+a0ce1bc657
 features: Basic-Auth GSSAPI Kerberos SPNEGO
 ```
 
-All downloaded versions are stored in $HOME/.oc-select. Selecting a version creates an symbolic link $HOME/.local/bin/oc
+All downloaded versions are stored in $HOME/.oc-select. For the selected version the symbolic link $HOME/.local/bin/oc is updated.
 
 ## List all available versions
 ```
