@@ -1,17 +1,15 @@
 # oc-select
 Downloads and links to alternative openshift client versions.
 
-All downloaded versions are stored in $HOME/.oc-select/. If you select a version the symbolic link $HOME/.local/bin/oc is created. 
-
 ## Installation
 ```
 mkdir -p $HOME/.local/bin
 cd $HOME/.local/bin
-wget -qhttps://raw.githubusercontent.com/webner/oc-select/master/oc-select
+wget -q https://raw.githubusercontent.com/webner/oc-select/master/oc-select
 chmod +x oc-select
 ```
 
-Make sure $HOME/.local/bin is in your PATH variable.
+Add $HOME/.local/bin to your PATH.
 ```
 export PATH="$PATH:$HOME/.local/bin"
 ```
@@ -39,6 +37,8 @@ oc v3.9.0+191fece
 kubernetes v1.9.1+a0ce1bc657
 features: Basic-Auth GSSAPI Kerberos SPNEGO
 ```
+
+All downloaded versions are stored in $HOME/.oc-select. Selecting a version creates an symbolic link $HOME/.local/bin/oc
 
 ## List all available versions
 ```
