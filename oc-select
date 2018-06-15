@@ -1,0 +1,91 @@
+#!/bin/bash
+CFG_DIR=$HOME/.oc-select
+RELEASES="$CFG_DIR/releases"
+BIN_DIR=$HOME/.local/bin
+
+function usage() {
+    echo "oc-select <command>|<version>"
+    echo "-----------------------------------------"
+    echo "help               show usage information"
+    echo "update             update version cache"
+    echo "list               list all versions"
+    echo "<version>          switch to oc <version>"
+}
+
+function update() {
+    mkdir -p "$CFG_DIR"
+    wget -qO "$CFG_DIR/releases" https://api.github.com/repos/openshift/origin/releases
+}
+
+function need_update() {
+    [[ ! -e "$RELEASES" ]] || [[ $(find "$RELEASES" -type f -mtime +13 -print) ]]
+}
+
+function build_release_info() {
+    cat "$RELEASES" | jq -r '.[] | . as $release | select(.name | test("alpha|rc|v1.[234]") | not) | .assets[] | select(.name | test("client.*linux.*64")) | $release.name+" "+.name+" "+.browser_download_url'
+}
+
+function list_releases() {
+    if need_update ; then
+        update
+    fi
+    RELINFO=$(build_release_info)
+
+    IFS=$'\n'
+    for rel in $RELINFO; do
+        IFS=$' '
+        r=($rel)
+        version=${r[0]}
+        filename=${r[1]}
+        download_url=${r[2]}
+        target_dir="$CFG_DIR/$version"
+        info="not installed"
+        if [ -e "$target_dir/oc" ]; then
+            info="available"
+        fi
+        if [ "$(readlink $BIN_DIR/oc)" == "$target_dir/oc" ]; then
+            info="current"
+        fi
+        echo "$version ($info)"
+    done
+}
+
+function use_release() {
+    if need_update ; then
+        update
+    fi
+    RELINFO=$(build_release_info)
+
+    IFS=$'\n'
+    for rel in $RELINFO; do
+        IFS=$' '
+        r=($rel)
+        version=${r[0]}
+        if [[ "$version" == *"$1"* ]]; then
+            filename=${r[1]}
+            download_url=${r[2]}
+            target_dir="$CFG_DIR/$version"
+            if [ ! -e "$target_dir/oc" ]; then
+                echo "downloading $download_url"
+                mkdir -p "$target_dir"
+                curl -sSL "$download_url" | tar xz --warning=no-unknown-keyword --strip-components=1 -C "$target_dir"
+            fi
+            ln -fs "$target_dir/oc" "$BIN_DIR/oc"
+            return 0
+        fi
+    done
+    return 1
+}
+
+if [ "$1" == "" ]; then
+    usage
+    exit 0
+fi
+
+case "$1" in
+    help) usage ;;
+    update) update ;;
+    list) list_releases ;;
+    *) use_release "$1" || echo "command or version '$1' not found. try 'oc-select help' for available commands" ;;
+esac
+
