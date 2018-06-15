@@ -1,6 +1,9 @@
 # oc-select
 Downloads and links to alternative openshift client versions.
 
+## Dependencies
+The scripts needs following packages: wget tar curl jq
+
 ## Installation
 ```
 mkdir -p $HOME/.local/bin
