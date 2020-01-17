@@ -22,7 +22,10 @@ function need_update() {
 }
 
 function build_release_info() {
-    cat "$RELEASES" | jq -r '.[] | . as $release | select(.name | test("alpha|rc|v1.[234]") | not) | .assets[] | select(.name | test("client.*linux.*64")) | $release.name+" "+.name+" "+.browser_download_url'
+    for v in 4.{4..1} ; do
+      echo "v$v oc https://mirror.openshift.com/pub/openshift-v4/clients/oc/$v/linux/oc.tar.gz 0"
+    done
+    cat "$RELEASES" | jq -r '.[] | . as $release | select(.name | test("alpha|rc|v1.[234]") | not) | .assets[] | select(.name | test("client.*linux.*64")) | $release.name+" "+.name+" "+.browser_download_url+" 1"'
 }
 
 function list_releases() {
@@ -64,11 +67,12 @@ function use_release() {
         if [[ "$version" == *"$1"* ]]; then
             filename=${r[1]}
             download_url=${r[2]}
+            strip_components=${r[3]}
             target_dir="$CFG_DIR/$version"
             if [ ! -e "$target_dir/oc" ]; then
                 echo "downloading $download_url"
                 mkdir -p "$target_dir"
-                curl -sSL "$download_url" | tar xz --warning=no-unknown-keyword --strip-components=1 -C "$target_dir"
+                curl -sSL "$download_url" | tar xz --warning=no-unknown-keyword --strip-components=$strip_components -C "$target_dir"
             fi
             ln -fs "$target_dir/oc" "$BIN_DIR/oc"
             return 0
