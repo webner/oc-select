@@ -1,7 +1,7 @@
 #!/bin/bash
-CFG_DIR=$HOME/.oc-select
+[ -z "$CFG_DIR" ] && CFG_DIR=$HOME/.oc-select
+[ -z "$BIN_DIR" ] && BIN_DIR=$HOME/.local/bin
 RELEASES="$CFG_DIR/releases"
-BIN_DIR=$HOME/.local/bin
 
 function usage() {
     echo "oc-select <command>|<version>"
