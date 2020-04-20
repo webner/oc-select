@@ -27,6 +27,7 @@ oc-select <command>|<version>
 help               show usage information
 update             update version cache
 list               list all versions
+path <version>     print oc path
 <version>          switch to oc <version>
 ```
 

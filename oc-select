@@ -9,6 +9,7 @@ function usage() {
     echo "help               show usage information"
     echo "update             update version cache"
     echo "list               list all versions"
+    echo "path <version>     print oc path"
     echo "<version>          switch to oc <version>"
 }
 
@@ -53,7 +54,7 @@ function list_releases() {
     done
 }
 
-function use_release() {
+function get_path() {
     if need_update ; then
         update
     fi
@@ -70,15 +71,20 @@ function use_release() {
             strip_components=${r[3]}
             target_dir="$CFG_DIR/$version"
             if [ ! -e "$target_dir/oc" ]; then
-                echo "downloading $download_url"
+                echo "downloading $download_url" 1>&2
                 mkdir -p "$target_dir"
                 curl -sSL "$download_url" | tar xz --warning=no-unknown-keyword --strip-components=$strip_components -C "$target_dir"
             fi
-            ln -fs "$target_dir/oc" "$BIN_DIR/oc"
+
+            echo "$target_dir"
             return 0
         fi
     done
     return 1
+}
+
+function use_release() {
+    target_dir=$(get_path "$1") && ln -fs "$target_dir/oc" "$BIN_DIR/oc"
 }
 
 if [ "$1" == "" ]; then
@@ -90,6 +96,7 @@ case "$1" in
     help) usage ;;
     update) update ;;
     list) list_releases ;;
+    path) get_path "$2";;
     *) use_release "$1" || echo "command or version '$1' not found. try 'oc-select help' for available commands" ;;
 esac
 
