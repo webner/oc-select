@@ -23,7 +23,7 @@ function need_update() {
 }
 
 function build_release_info() {
-    for v in 4.{4..1} ; do
+    for v in 4.{7..1} ; do
       echo "v$v oc https://mirror.openshift.com/pub/openshift-v4/clients/oc/$v/linux/oc.tar.gz 0"
     done
     cat "$RELEASES" | jq -r '.[] | . as $release | select(.name | test("alpha|rc|v1.[234]") | not) | .assets[] | select(.name | test("client.*linux.*64")) | $release.name+" "+.name+" "+.browser_download_url+" 1"'
