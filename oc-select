@@ -26,7 +26,7 @@ function build_release_info() {
     for v in 4.{7..1} ; do
       echo "v$v oc https://mirror.openshift.com/pub/openshift-v4/clients/oc/$v/linux/oc.tar.gz 0"
     done
-    cat "$RELEASES" | jq -r '.[] | . as $release | select(.name | test("alpha|rc|v1.[234]") | not) | .assets[] | select(.name | test("client.*linux.*64")) | $release.name+" "+.name+" "+.browser_download_url+" 1"'
+    jq -r '.[] | . as $release | select(.name | test("alpha|rc|v1.[234]") | not) | .assets[] | select(.name | test("client.*linux.*64")) | $release.name+" "+.name+" "+.browser_download_url+" 1"' < "$RELEASES"
 }
 
 function list_releases() {
@@ -38,16 +38,15 @@ function list_releases() {
     IFS=$'\n'
     for rel in $RELINFO; do
         IFS=$' '
-        r=($rel)
+        read -r -a r <<< "$rel"
         version=${r[0]}
-        filename=${r[1]}
         download_url=${r[2]}
         target_dir="$CFG_DIR/$version"
         info="not installed"
         if [ -e "$target_dir/oc" ]; then
             info="available"
         fi
-        if [ "$(readlink $BIN_DIR/oc)" == "$target_dir/oc" ]; then
+        if [ "$(readlink "$BIN_DIR/oc")" == "$target_dir/oc" ]; then
             info="current"
         fi
         echo "$version ($info)"
@@ -63,17 +62,16 @@ function get_path() {
     IFS=$'\n'
     for rel in $RELINFO; do
         IFS=$' '
-        r=($rel)
+        read -r -a r <<< "$rel"
         version=${r[0]}
         if [[ "$version" == *"$1"* ]]; then
-            filename=${r[1]}
             download_url=${r[2]}
             strip_components=${r[3]}
             target_dir="$CFG_DIR/$version"
             if [ ! -e "$target_dir/oc" ]; then
                 echo "downloading $download_url" 1>&2
                 mkdir -p "$target_dir"
-                curl -sSL "$download_url" | tar xz --warning=no-unknown-keyword --strip-components=$strip_components -C "$target_dir"
+                curl -sSL "$download_url" | tar xz --warning=no-unknown-keyword --strip-components="$strip_components" -C "$target_dir"
             fi
 
             echo "$target_dir"
