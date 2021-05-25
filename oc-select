@@ -1,7 +1,11 @@
 #!/bin/bash
+set -eo pipefail
+
 [ -z "$CFG_DIR" ] && CFG_DIR=$HOME/.oc-select
 [ -z "$BIN_DIR" ] && BIN_DIR=$HOME/.local/bin
 RELEASES="$CFG_DIR/releases"
+
+die() { echo -e "$*" 1>&2 ; exit 1; }
 
 function usage() {
     echo "oc-select <command>|<version>"
@@ -97,6 +101,5 @@ case "$1" in
     update) update ;;
     list) list_releases ;;
     path) get_path "$2";;
-    *) use_release "$1" || echo "command or version '$1' not found. try 'oc-select help' for available commands" ;;
+    *) use_release "$1" || die "command or version '$1' not found. try 'oc-select help' for available commands" ;;
 esac
-
